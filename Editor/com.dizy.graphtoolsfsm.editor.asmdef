@@ -1,0 +1,18 @@
+{
+    "name": "com.dizy.graphtools.fsm.editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:dafb0057b6f3c094db65d1707c74f662"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

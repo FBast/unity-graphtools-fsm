@@ -1,0 +1,78 @@
+/* --- Base Node Style --- */
+.base-node {
+    background-color: rgb(38, 38, 38);
+    border-radius: 6px;
+    padding: 6px;
+    min-width: 200px;
+}
+
+.base-node #title {
+    background-color: rgb(38, 38, 38);
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    font-size: 14px;
+    color: white;
+    flex-direction: row;
+    align-items: center;
+}
+
+.base-node #title #title-label {
+    flex-grow: 1;
+}
+
+.base-node #contents {
+    background-color: #434343;
+}
+
+.base-node #top {
+    display: none;
+}
+
+/* --- Extension ---*/
+
+.base-node #extension .unity-base-field__input {
+    justify-content: flex-end;
+}
+
+.base-node #extension #unity-text-input {
+    border-radius: 0;
+    border-top-width: 0;
+}
+
+/* --- Entry Node --- */
+.entry-node #title {
+    background-color: rgb(51, 153, 0);
+    -unity-font-style: bold;
+}
+
+.entry-node #divider {
+    display: none;
+}
+
+/* --- State Node --- */
+.state-node #title #title-label {
+    -unity-font-style: bold;
+}
+
+/* --- Icon Elements --- */
+.node-icon {
+    width: 16px;
+    height: 16px;
+    margin-left: 10px;
+    align-self: center;
+}
+
+/* --- Progress Bar --- */
+.progress-bar {
+    height: 8px;
+    margin-top: 2px;
+    background-color: rgb(51, 178, 255);
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 2px;
+    display: flex;
+}
+
+/* --- Hidden Progress Bar --- */
+.progress-bar.hidden {
+    display: none;
+}
