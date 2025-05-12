@@ -21,7 +21,7 @@ A flexible Finite State Machine (FSM) editor for Unity, built using the GraphVie
 
 - **Name**: `com.dizy.graphtools.fsm`
 - **Version**: `1.0.0`
-- **Unity Version**: `2021.3` or newer
+- **Unity Version**: `2022.3` or newer
 - **Namespace**: `Dizy.GraphTools.FSM`
 
 ---
