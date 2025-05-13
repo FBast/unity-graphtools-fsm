@@ -1,5 +1,6 @@
 using GraphToolsFSM.Editor.Core;
 using UnityEditor.Experimental.GraphView;
+using UnityEngine;
 
 namespace GraphToolsFSM.Editor.ViewNodes {
     public class EntryNodeView : BaseNodeView {
@@ -25,5 +26,7 @@ namespace GraphToolsFSM.Editor.ViewNodes {
             RefreshExpandedState();
             RefreshPorts();
         }
+
+        public override void Duplicate(Vector2 offset) { }
     }
 }

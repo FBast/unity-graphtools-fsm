@@ -41,11 +41,35 @@ namespace GraphToolsFSM.Editor.ViewNodes {
         
         public override void BuildContextualMenu(ContextualMenuPopulateEvent evt) {
             base.BuildContextualMenu(evt);
+            
+            // Add Transition
             evt.menu.AppendAction("Add Continued Transition", _ => {
                 var graphView = GetFirstAncestorOfType<FSMGraphView>();
                 if (graphView == null) return;
                 graphView.StartTransitionFrom(this, TransitionType.Continued);
             });
+            
+            // Duplicate
+            evt.menu.AppendAction("Duplicate", _ =>
+            {
+                Duplicate(new Vector2(30, 30));
+            });
+        }
+
+        public virtual void Duplicate(Vector2 offset)
+        {
+            var graphView = GetFirstAncestorOfType<FSMGraphView>();
+            if (graphView == null) return;
+            
+            var data = ToData();
+            data.Position += offset;
+
+            var copy = NodeViewFactory.CreateFromData(data);
+            if (copy == null) return;
+                
+            graphView.AddElement(copy);
+            graphView.AddToSelection(copy);
+            graphView.RemoveFromSelection(this);
         }
 
         private void OnMouseDown(MouseDownEvent evt) {

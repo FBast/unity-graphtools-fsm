@@ -6,7 +6,9 @@ using UnityEngine;
 
 namespace GraphToolsFSM.Editor.ViewNodes {
     public static class NodeViewFactory {
-        public static BaseNodeView CreateFromData(BaseNodeData data, Vector2 defaultSize) {
+        public static Vector2 DefaultNodeSize = new(150, 200);
+        
+        public static BaseNodeView CreateFromData(BaseNodeData data) {
             var type = Type.GetType(data.NodeType);
             if (type == null) return null;
 
@@ -22,9 +24,24 @@ namespace GraphToolsFSM.Editor.ViewNodes {
 
             if (view == null) return null;
             view.GUID = data.Guid;
-            view.SetPosition(new Rect(data.Position, defaultSize));
+            view.SetPosition(new Rect(data.Position, DefaultNodeSize));
             view.ApplyCustomFields(data.CustomFields);
             return view;
+        }
+        
+        public static BaseNodeView CreateFromType(Type type, Vector2 position)
+        {
+            if (type == null) return null;
+
+            var data = new BaseNodeData
+            {
+                Guid = Guid.NewGuid().ToString(),
+                NodeType = type.AssemblyQualifiedName,
+                Position = position,
+                CustomFields = new System.Collections.Generic.List<FieldPair>()
+            };
+
+            return CreateFromData(data);
         }
     }
 }

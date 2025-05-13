@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using GraphToolsFSM.Editor.Edges;
 using GraphToolsFSM.Editor.Helpers;
 using GraphToolsFSM.Editor.ViewNodes;
 using GraphToolsFSM.Runtime.DataNodes;
-using GraphToolsFSM.Runtime.Nodes;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
@@ -12,12 +12,12 @@ using UnityEngine.UIElements;
 
 namespace GraphToolsFSM.Editor.Core {
     public class FSMGraphView : GraphView {
-        public readonly Vector2 DefaultNodeSize = new(150, 200);
-
         private EntryNodeView _entryNode;
         private BaseNodeView _pendingTransitionSource;
         private TransitionEdge _ghostEdge;
         private Vector2 _lastMousePosition;
+        private readonly List<(BaseNodeData data, Vector2 offset)> _clipboard = new();
+        private Vector2 _clipboardOffset;
 
         public bool IsTransitionPending => _pendingTransitionSource != null;
         public FSMGraphData CurrentGraph { get; set; }
@@ -46,6 +46,7 @@ namespace GraphToolsFSM.Editor.Core {
             
             RegisterCallback<MouseUpEvent>(OnMouseUp);
             RegisterCallback<MouseMoveEvent>(OnMouseMove);
+            RegisterCallback<KeyDownEvent>(OnKeyDown);
 
             graphViewChanged += OnGraphViewChanged;
         }
@@ -70,6 +71,63 @@ namespace GraphToolsFSM.Editor.Core {
             _ghostEdge.MarkDirtyRepaint();
         }
 
+        private void OnKeyDown(KeyDownEvent evt)
+        {
+            // Ctrl + D = Duplicate
+            if (evt.ctrlKey && evt.keyCode == KeyCode.D) {
+                foreach (var node in selection.OfType<BaseNodeView>().ToList())
+                {
+                    node.Duplicate(new Vector2(30, 30));
+                }
+
+                MarkGraphAsDirty();
+                evt.StopPropagation();
+                return;
+            }
+
+            // Ctrl + C = Copy
+            if (evt.ctrlKey && evt.keyCode == KeyCode.C)
+            {
+                _clipboard.Clear();
+
+                var selected = selection.OfType<BaseNodeView>().ToList();
+                if (selected.Count == 0) return;
+
+                _clipboardOffset = this.ChangeCoordinatesTo(contentViewContainer, Event.current.mousePosition);
+
+                foreach (var view in selected)
+                {
+                    var data = view.ToData();
+                    var offset = data.Position - _clipboardOffset;
+
+                    data.Guid = Guid.NewGuid().ToString();
+                    _clipboard.Add((data, offset));
+                }
+
+                evt.StopPropagation();
+
+            }
+
+            // Ctrl + V = Paste
+            if (evt.ctrlKey && evt.keyCode == KeyCode.V && _clipboard.Count > 0)
+            {
+                Vector2 pasteMousePos = this.ChangeCoordinatesTo(contentViewContainer, Event.current.mousePosition);
+
+                foreach (var (data, offset) in _clipboard)
+                {
+                    data.Position = pasteMousePos + offset;
+
+                    var view = NodeViewFactory.CreateFromData(data);
+                    if (view == null) continue;
+
+                    AddElement(view);
+                    AddToSelection(view);
+                }
+
+            }
+        }
+
+        
         private GraphViewChange OnGraphViewChanged(GraphViewChange change) {
             if (change.edgesToCreate?.Count > 0 || change.elementsToRemove != null) {
                 MarkGraphAsDirty();
@@ -161,23 +219,9 @@ namespace GraphToolsFSM.Editor.Core {
             }
         }
 
-        private void CreateNode(Type type, Vector2 position) {
-            BaseNodeView node = type switch {
-                _ when typeof(BaseState).IsAssignableFrom(type) => new StateNodeView(type.AssemblyQualifiedName),
-                _ when typeof(BaseCondition).IsAssignableFrom(type) => new ConditionNodeView(type.AssemblyQualifiedName),
-                _ when type == typeof(AndLogical) => new LogicalNodeView(type.AssemblyQualifiedName, Port.Capacity.Multi, Port.Capacity.Single),
-                _ when type == typeof(OrLogical) => new LogicalNodeView(type.AssemblyQualifiedName, Port.Capacity.Multi, Port.Capacity.Single),
-                _ when type == typeof(NotLogical) => new LogicalNodeView(type.AssemblyQualifiedName, Port.Capacity.Single, Port.Capacity.Single),
-                _ => null
-            };
-
-            if (node == null) {
-                Debug.LogError($"[FSM] Type non supporté pour la création de node : {type.FullName}");
-                return;
-            }
-
-            node.GUID = Guid.NewGuid().ToString();
-            node.SetPosition(new Rect(position, DefaultNodeSize));
+        public void CreateNode(Type type, Vector2 position)
+        {
+            var node = NodeViewFactory.CreateFromType(type, position);
             node.OnModified += MarkGraphAsDirty;
             AddElement(node);
             MarkGraphAsDirty();
@@ -217,7 +261,7 @@ namespace GraphToolsFSM.Editor.Core {
             var nodeLookup = new Dictionary<string, BaseNodeView>();
             
             foreach (var nodeData in data.Nodes) {
-                var view = NodeViewFactory.CreateFromData(nodeData, DefaultNodeSize);
+                var view = NodeViewFactory.CreateFromData(nodeData);
                 if (view == null) {
                     Debug.LogWarning($"[FSM] Type non supporté ou inconnu : {nodeData.NodeType}");
                     continue;
