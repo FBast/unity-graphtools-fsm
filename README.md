@@ -30,8 +30,6 @@ A flexible Finite State Machine (FSM) editor for Unity, built using the GraphVie
 
 ## 🚀 Installation
 
-### ▶️ From Git (recommended)
-
 1. In Unity, open the **Package Manager**
 2. Click the `+` button → **Add package from Git URL...**
 3. Paste the following URL: ```https://github.com/FBast/unity-graphtools-fsm.git```
